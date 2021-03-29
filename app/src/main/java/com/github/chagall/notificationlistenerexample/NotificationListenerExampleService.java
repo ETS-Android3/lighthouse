@@ -73,23 +73,7 @@ public class NotificationListenerExampleService extends NotificationListenerServ
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
     public void onNotificationRemoved(StatusBarNotification sbn){
-        int notificationCode = matchNotificationCode(sbn);
-
-        if(notificationCode != InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE) {
-
-            StatusBarNotification[] activeNotifications = this.getActiveNotifications();
-
-            if(activeNotifications != null && activeNotifications.length > 0) {
-                for (int i = 0; i < activeNotifications.length; i++) {
-                    if (notificationCode == matchNotificationCode(activeNotifications[i])) {
-                        Intent intent = new  Intent("com.github.chagall.notificationlistenerexample");
-                        intent.putExtra("Notification Code", notificationCode);
-                        sendBroadcast(intent);
-                        break;
-                    }
-                }
-            }
-        }
+        return;
     }
 
     private int matchNotificationCode(StatusBarNotification sbn) {
