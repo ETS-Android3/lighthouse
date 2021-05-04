@@ -6,6 +6,7 @@ import android.os.IBinder;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
 
+
 import androidx.annotation.RequiresApi;
 
 /**
@@ -60,12 +61,14 @@ public class NotificationListenerExampleService extends NotificationListenerServ
     @Override
     public void onNotificationPosted(StatusBarNotification sbn){
         int notificationCode = matchNotificationCode(sbn);
+        String messageSender = sbn.getNotification().extras.getString("android.title");
         String messageContent = sbn.getNotification().extras.getString("android.text");
 
         if(notificationCode != InterceptedNotificationCode.OTHER_NOTIFICATIONS_CODE){
             Intent intent = new  Intent("com.github.chagall.notificationlistenerexample");
             intent.putExtra("Notification Code", notificationCode);
             intent.putExtra("Notification Message", messageContent);
+            intent.putExtra("Notification Message Sender", messageSender);
             sendBroadcast(intent);
         }
     }
