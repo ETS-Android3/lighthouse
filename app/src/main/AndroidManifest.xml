@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.github.chagall.notificationlistenerexample">
+    package="com.github.chagall.lighthouse">
 
     <application
         android:allowBackup="true"
@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
 
-        <service android:name=".NotificationListenerExampleService"
+        <service android:name=".Lighthouse"
             android:label="@string/service_label"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
             <intent-filter>

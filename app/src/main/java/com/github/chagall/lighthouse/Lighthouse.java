@@ -1,4 +1,4 @@
-package com.github.chagall.notificationlistenerexample;
+package com.github.chagall.lighthouse;
 
 import android.content.Intent;
 import android.os.Build;
@@ -28,7 +28,7 @@ import androidx.annotation.RequiresApi;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-public class NotificationListenerExampleService extends NotificationListenerService {
+public class Lighthouse extends NotificationListenerService {
 
     /*
         These are the package names of the apps. for which we want to

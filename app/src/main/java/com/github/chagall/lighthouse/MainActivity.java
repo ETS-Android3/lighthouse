@@ -1,4 +1,4 @@
-package com.github.chagall.notificationlistenerexample;
+package com.github.chagall.lighthouse;
 
 import android.app.AlertDialog;
 import android.app.NotificationChannel;
@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.Settings;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,7 +20,11 @@ import androidx.core.app.NotificationManagerCompat;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.util.Patterns;
@@ -55,26 +60,47 @@ public class  MainActivity extends AppCompatActivity {
     private int notificationId;
     private ImageChangeBroadcastReceiver imageChangeBroadcastReceiver;
     private AlertDialog enableNotificationListenerAlertDialog;
-    private List<String> disinformationLinksToIntercept = Arrays.asList(
-            "google.com",
-            "https://www.google.com/",
-            "www.google.com",
-            "www.stanford.edu",
-            "stanford.edu"
-    );
-    //private List<String> disinformationLinksToIntercept = new ArrayList<>();
+//    private List<String> disinformationLinksToIntercept = Arrays.asList(
+//            "google.com",
+//            "https://www.google.com/",
+//            "www.google.com",
+//            "www.stanford.edu",
+//            "stanford.edu"
+//    );
+    private List<String> disinformationLinksToIntercept = new ArrayList<>();
+    //private List<String> interceptedLinks = new ArrayList<>();
+    private ArrayList<LinkModel> interceptedLinks = new ArrayList<>();
+
+
     private String CHANNEL_ID = "WHATSAPP_DISINFO";
     private Cursor initialDisinfoLinks;
     private SQLDatabaseHelper db;
+    private LinkModelAdapter adapter;
+    private ListView linkListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         createNotificationChannel();
         setContentView(R.layout.activity_main);
-        //loadDataBaseLinks();
-        interceptedNotificationTextView
-                = (TextView) this.findViewById(R.id.image_change_explanation);
+        loadDataBaseLinks();
+
+        linkListView = (ListView) findViewById(R.id.link_list);
+        adapter = new LinkModelAdapter(this, interceptedLinks);
+        linkListView.setAdapter(adapter);
+
+        linkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                LinkModel obj = (LinkModel) linkListView.getAdapter().getItem(position);
+                Uri uri = Uri.parse("https://www." + obj.link);
+                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                startActivity(intent);
+            }
+        });
+
+
+        //interceptedNotificationTextView
+        //        = (TextView) this.findViewById(R.id.image_change_explanation);
 
         // If the user did not turn the notification listener service on we prompt him to do so
         if(!isNotificationServiceEnabled()){
@@ -93,7 +119,7 @@ public class  MainActivity extends AppCompatActivity {
     public void loadDataBaseLinks() {
         db = new SQLDatabaseHelper(this);
         initialDisinfoLinks = db.getDisinfoLinks();
-        while (initialDisinfoLinks.moveToNext ()){
+        while (initialDisinfoLinks.moveToNext()){
             disinformationLinksToIntercept.add(initialDisinfoLinks.getString(initialDisinfoLinks.getColumnIndex("domain")));
         }
         initialDisinfoLinks.close();
@@ -119,8 +145,8 @@ public class  MainActivity extends AppCompatActivity {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = "Whatsapp Disinfo";
-            String description =  "Whatsapp Disinfo";
+            CharSequence name = "Lighthouse";
+            String description =  "Lighthouse";
             int importance = NotificationManager.IMPORTANCE_DEFAULT;
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
             channel.setDescription(description);
@@ -135,10 +161,10 @@ public class  MainActivity extends AppCompatActivity {
      * @param notificationCode The intercepted notification code
      */
     private void changeInterceptedNotificationInfo(int notificationCode, String messageContent, String messageSender){
-        if(notificationCode == NotificationListenerExampleService.InterceptedNotificationCode.WHATSAPP_CODE){
+        if(notificationCode == Lighthouse.InterceptedNotificationCode.WHATSAPP_CODE){
             ArrayList<List<String>> detectedLinks = extractLinks(messageContent, messageSender);
             ArrayList<List<String>>  disinformationLinks = dummyVerifyExtractedLinks(detectedLinks);
-            notifyDisinformationLinks(disinformationLinks);
+            notifyDisinformationLinks(disinformationLinks, messageContent);
         }
     }
 
@@ -172,7 +198,7 @@ public class  MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void notifyDisinformationLinks(ArrayList<List<String>> disinformationLinks) {
+    private void notifyDisinformationLinks(ArrayList<List<String>> disinformationLinks, String originalMessage) {
         if(disinformationLinks == null || disinformationLinks.size() == 0)
             return;
 
@@ -180,8 +206,12 @@ public class  MainActivity extends AppCompatActivity {
         String notificationMessage = "";
         String linkSender = "";
         for(List<String> link : disinformationLinks) {
-            interceptedNotificationTextView.append("\n" + link.get(1) + ": " + link.get(0)  + "\n");
-            notificationMessage = notificationMessage.concat(link.get(1) + ": " + link.get(0));
+            String linkInfo = link.get(1) + ": " + link.get(0);
+            //interceptedNotificationTextView.append("\n" + linkInfo  + "\n");
+            LinkModel linkInfoListFormat = new LinkModel(link.get(1), link.get(0), originalMessage);
+            interceptedLinks.add(linkInfoListFormat);
+            adapter.notifyDataSetChanged();
+            notificationMessage = notificationMessage.concat(linkInfo);
             linkSender = link.get(1);
         }
 
@@ -192,9 +222,9 @@ public class  MainActivity extends AppCompatActivity {
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setSmallIcon(R.drawable.whatsapp_logo)
-                .setContentTitle("Whatsapp Disinfo")
-                .setContentText("You’ve been sent messages that may contain misleading information")
+                .setSmallIcon(R.drawable.lighthouse_logo)
+                .setContentTitle("Lighthouse")
+                .setContentText(linkSender + " sent you messages that may contain misleading information")
                 .setStyle(new NotificationCompat.BigTextStyle()
                         .bigText(notificationMessage))
                 .setAutoCancel(true)

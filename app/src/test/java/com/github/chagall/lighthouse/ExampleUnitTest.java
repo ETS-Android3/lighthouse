@@ -1,4 +1,4 @@
-package com.github.chagall.notificationlistenerexample;
+package com.github.chagall.lighthouse;
 
 import org.junit.Test;
 
