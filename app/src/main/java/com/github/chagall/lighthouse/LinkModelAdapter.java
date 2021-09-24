@@ -10,6 +10,11 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 public class LinkModelAdapter extends ArrayAdapter<LinkModel> {
+    /**
+     * adapter class to populate LIstView with data from list of LinkModel objects. 
+     * @param context
+     * @param links
+     */
     public LinkModelAdapter(Context context, ArrayList<LinkModel> links) {
         super(context, 0, links);
     }
