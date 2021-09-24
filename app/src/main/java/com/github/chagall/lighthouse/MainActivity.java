@@ -22,43 +22,21 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
 import android.util.Patterns;
 import android.widget.Toast;
 
 import java.util.*;
 import java.util.regex.Matcher;
 
-/**
- * MIT License
- *
- *  Copyright (c) 2016 Fábio Alves Martins Pereira (Chagall)
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+import static android.content.Intent.ACTION_VIEW;
+
 public class  MainActivity extends AppCompatActivity {
 
     private static final String ENABLED_NOTIFICATION_LISTENERS = "enabled_notification_listeners";
     private static final String ACTION_NOTIFICATION_LISTENER_SETTINGS = "android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS";
-    private TextView interceptedNotificationTextView;
     private int notificationId;
-    private ImageChangeBroadcastReceiver imageChangeBroadcastReceiver;
+    private NotificationBroadcastReceiver notificationBroadcastReceiver;
     private AlertDialog enableNotificationListenerAlertDialog;
 //    private List<String> disinformationLinksToIntercept = Arrays.asList(
 //            "google.com",
@@ -68,7 +46,6 @@ public class  MainActivity extends AppCompatActivity {
 //            "stanford.edu"
 //    );
     private List<String> disinformationLinksToIntercept = new ArrayList<>();
-    //private List<String> interceptedLinks = new ArrayList<>();
     private ArrayList<LinkModel> interceptedLinks = new ArrayList<>();
 
 
@@ -84,38 +61,44 @@ public class  MainActivity extends AppCompatActivity {
         createNotificationChannel();
         setContentView(R.layout.activity_main);
         loadDataBaseLinks();
-
-        linkListView = (ListView) findViewById(R.id.link_list);
+        /*
+        linkListView is a frontend component that uses a list view rendering LinkModel objects using
+        the LinkModelAdapter class. An onClickListener for each list element uses the LinkModel object's
+        link attribute to hyperlink the original disinfo link. This will eventually be replaced by
+        a link to the debunking article.
+        */
+        linkListView = findViewById(R.id.link_list);
         adapter = new LinkModelAdapter(this, interceptedLinks);
         linkListView.setAdapter(adapter);
 
+        // hyperlink list object to original website
         linkListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 LinkModel obj = (LinkModel) linkListView.getAdapter().getItem(position);
                 Uri uri = Uri.parse("https://www." + obj.link);
-                Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                Intent intent = new Intent(ACTION_VIEW, uri);
                 startActivity(intent);
             }
         });
 
 
-        //interceptedNotificationTextView
-        //        = (TextView) this.findViewById(R.id.image_change_explanation);
-
-        // If the user did not turn the notification listener service on we prompt him to do so
+        // Prompt user to turn on notification listener service if turned off
         if(!isNotificationServiceEnabled()){
             enableNotificationListenerAlertDialog = buildNotificationServiceAlertDialog();
             enableNotificationListenerAlertDialog.show();
         }
 
         // Finally we register a receiver to tell the MainActivity when a notification has been received
-        imageChangeBroadcastReceiver = new ImageChangeBroadcastReceiver();
+        notificationBroadcastReceiver = new NotificationBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("com.github.chagall.notificationlistenerexample");
-        registerReceiver(imageChangeBroadcastReceiver,intentFilter);
+        registerReceiver(notificationBroadcastReceiver,intentFilter);
         notificationId = 0;
     }
 
+    /**
+     * Helper method to populate local links struct with domains from SQLite Database.
+     * */
     public void loadDataBaseLinks() {
         db = new SQLDatabaseHelper(this);
         initialDisinfoLinks = db.getDisinfoLinks();
@@ -124,6 +107,10 @@ public class  MainActivity extends AppCompatActivity {
         }
         initialDisinfoLinks.close();
     }
+
+    /**
+     * Detect links in a message, add to detected links data structure with name of sender.
+     * */
     public static ArrayList<List<String>> extractLinks(String text, String messageSender) {
         ArrayList<List<String>> links = new ArrayList<>();
         Matcher m = Patterns.WEB_URL.matcher(text);
@@ -140,8 +127,12 @@ public class  MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        unregisterReceiver(imageChangeBroadcastReceiver);
+        unregisterReceiver(notificationBroadcastReceiver);
     }
+
+    /**
+     * One time notification channel set up.
+     * */
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -156,8 +147,8 @@ public class  MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Change Intercepted Notification Image
-     * Changes the MainActivity image based on which notification was intercepted
+     * Change Intercepted Notification
+     * Changes the MainActivity based on which notification was intercepted
      * @param notificationCode The intercepted notification code
      */
     private void changeInterceptedNotificationInfo(int notificationCode, String messageContent, String messageSender){
@@ -167,6 +158,11 @@ public class  MainActivity extends AppCompatActivity {
             notifyDisinformationLinks(disinformationLinks, messageContent);
         }
     }
+
+    /**
+     * Basic verification implementation that iterates through the detected message links and
+     * compares against populated disinformation link database.
+     * */
 
     private ArrayList<List<String>>  dummyVerifyExtractedLinks(ArrayList<List<String>> detectedLinks) {
         ArrayList<List<String>>  disinformationLinks = new ArrayList<>();
@@ -178,38 +174,27 @@ public class  MainActivity extends AppCompatActivity {
         return disinformationLinks;
     }
 
-    private void alertDisinformationLinks(ArrayList<List<String>> disinformationLinks) {
-        if(disinformationLinks == null || disinformationLinks.size() == 0)
-            return;
-        String alertMessage = "The following links might contain misleading information:\n";
-        for(List<String> link : disinformationLinks) {
-            alertMessage = alertMessage.concat(link.get(1) + ": " + link.get(0)  + "\n");
-        }
-
-        AlertDialog alertDialog = new AlertDialog.Builder(MainActivity.this).create();
-        alertDialog.setTitle("Disinformation Found");
-        alertDialog.setMessage(alertMessage);
-        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-        alertDialog.show();
-    }
+    /**
+     * Create custom Lighthouse notification alerting user of recently detected links using the
+     * android Notification API. This involves using the notification builder to create a new
+     * custom notification on the app's notification channel by adding sender info to the pop up
+     * notification.
+     * */
 
     private void notifyDisinformationLinks(ArrayList<List<String>> disinformationLinks, String originalMessage) {
         if(disinformationLinks == null || disinformationLinks.size() == 0)
             return;
 
-        //String notificationMessage = "The following links might contain misleading information:\n";
         String notificationMessage = "";
         String linkSender = "";
         for(List<String> link : disinformationLinks) {
             String linkInfo = link.get(1) + ": " + link.get(0);
-            //interceptedNotificationTextView.append("\n" + linkInfo  + "\n");
             LinkModel linkInfoListFormat = new LinkModel(link.get(1), link.get(0), originalMessage);
             interceptedLinks.add(linkInfoListFormat);
+            /*
+            The list adapter is notified of the change in data contained by the MainActivity
+            list in the UI so as to reflect any newly added data.
+            */
             adapter.notifyDataSetChanged();
             notificationMessage = notificationMessage.concat(linkInfo);
             linkSender = link.get(1);
@@ -243,19 +228,6 @@ public class  MainActivity extends AppCompatActivity {
         toast.show();
     }
 
-    public void createAlert(String alertMessage, Context context) {
-        try {
-            Intent intent = new Intent(context, MainActivity.class);
-            intent.putExtra("alarm_message", alertMessage);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            context.startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-
-        }
-    }
-
     /**
      * Is Notification Service Enabled.
      * Verifies if the notification listener service is enabled.
@@ -281,12 +253,11 @@ public class  MainActivity extends AppCompatActivity {
     }
 
     /**
-     * Image Change Broadcast Receiver.
+     * Change Broadcast Receiver.
      * We use this Broadcast Receiver to notify the Main Activity when
-     * a new notification has arrived, so it can properly change the
-     * notification image
+     * a new notification has arrived
      * */
-    public class ImageChangeBroadcastReceiver extends BroadcastReceiver {
+    public class NotificationBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
             int receivedNotificationCode = intent.getIntExtra("Notification Code",-1);
