@@ -11,41 +11,33 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.AssetManager;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.provider.Settings;
+import android.text.TextUtils;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.Toast;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.regex.Matcher;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
-
-import android.os.Bundle;
-import android.text.TextUtils;
-import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListView;
-import android.util.Patterns;
-import android.widget.Toast;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Paths;
-import java.util.*;
-import java.util.regex.Matcher;
 
 import static android.content.Intent.ACTION_VIEW;
 
@@ -85,7 +77,7 @@ public class  MainActivity extends AppCompatActivity {
         link attribute to hyperlink the original disinfo link. This will eventually be replaced by
         a link to the debunking article.
         */
-        linkListView = findViewById(R.id.link_list);
+        linkListView = linkListView.findViewById(R.id.link_list);
         adapter = new LinkModelAdapter(this, interceptedLinks);
         linkListView.setAdapter(adapter);
 
@@ -222,8 +214,17 @@ public class  MainActivity extends AppCompatActivity {
         for(List<String> link : disinformationLinks) {
             String linkInfo = link.get(1) + ": " + link.get(0);
             JSONObject writeup = new JSONObject();
+            ArrayList<MessageModel> messagesContainingDomain = new ArrayList<>();
             LinkModel linkInfoListFormat = new LinkModel(
-                    link.get(1), link.get(0), originalMessage, "identifier", "topline", "rank", 0, writeup
+                    link.get(1),
+                    link.get(0),
+                    originalMessage,
+                    "identifier",
+                    "topline",
+                    "rank",
+                    0,
+                    writeup,
+                    messagesContainingDomain
                     );
             interceptedLinks.add(linkInfoListFormat);
             /*

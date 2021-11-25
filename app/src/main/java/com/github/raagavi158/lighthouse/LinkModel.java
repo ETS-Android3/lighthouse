@@ -2,6 +2,9 @@ package com.github.raagavi158.lighthouse;
 
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class LinkModel {
     public String sender;
     public String link;
@@ -11,6 +14,8 @@ public class LinkModel {
     public String rank;
     public int score;
     public JSONObject writeup;
+    public ArrayList<MessageModel> messagesContainingDomain = new ArrayList<>();
+
 
     /**
      * Link object to store extraneous parameters for detected links including sender and original
@@ -27,7 +32,9 @@ public class LinkModel {
                      String topline,
                      String rank,
                      int score,
-                     JSONObject writeup) {
+                     JSONObject writeup,
+                     ArrayList<MessageModel> messagesContainingDomain
+                     ) {
 
         this.sender = sender;
         this.link = link;
@@ -37,5 +44,6 @@ public class LinkModel {
         this.rank = rank;
         this.score = score;
         this.writeup = writeup;
+        this.messagesContainingDomain = messagesContainingDomain;
     }
 }
