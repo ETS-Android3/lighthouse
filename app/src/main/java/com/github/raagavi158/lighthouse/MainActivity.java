@@ -77,7 +77,7 @@ public class  MainActivity extends AppCompatActivity {
         link attribute to hyperlink the original disinfo link. This will eventually be replaced by
         a link to the debunking article.
         */
-        linkListView = linkListView.findViewById(R.id.link_list);
+        linkListView = findViewById(R.id.link_list);
         adapter = new LinkModelAdapter(this, interceptedLinks);
         linkListView.setAdapter(adapter);
 
@@ -109,7 +109,7 @@ public class  MainActivity extends AppCompatActivity {
     /**
      * Helper method to populate local links struct with domains from SQLite Database.
      * */
-    @RequiresApi(api = Build.VERSION_CODES.O)
+   // @RequiresApi(api = Build.VERSION_CODES.O)
     public void loadDataBaseLinks() {
         try {
             ObjectMapper mapper = new ObjectMapper();
@@ -124,8 +124,11 @@ public class  MainActivity extends AppCompatActivity {
             for(NewsguardModel article : articles) {
                 disinformationLinksToIntercept.add(article.identifier);
             }
+            Log.i("json file", String.valueOf(disinformationLinksToIntercept.size()));
+            file.close();
 
         } catch (Exception ex) {
+            Log.i("json file", ex.toString());
             ex.printStackTrace();
         }
 
@@ -296,6 +299,7 @@ public class  MainActivity extends AppCompatActivity {
     public class NotificationBroadcastReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
+            Log.i("json file", "new activity");
             int receivedNotificationCode = intent.getIntExtra("Notification Code",-1);
             String receivedNotificationContent = intent.getStringExtra("Notification Message");
             String receivedNotificationContentSender = intent.getStringExtra("Notification Message Sender");
