@@ -185,7 +185,6 @@ class DashboardActivity : AppCompatActivity() {
                 writeup,
                 messagesContainingDomain
             )
-
             interceptedLinks.add(linkInfoListFormat)
 
 
