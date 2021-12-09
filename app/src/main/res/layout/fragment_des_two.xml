@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_frag"
+    android:orientation="vertical"
+    android:padding="@dimen/_10sdp"
+    tools:context=".ui.userprofile.DesOneFragment">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        app:cardCornerRadius="@dimen/_10sdp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/_10sdp"
+                android:orientation="vertical"
+                tools:ignore="ExtraText">
+
+                <TextView
+                    android:id="@+id/tvSiteContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/roboto_medium"
+                    android:gravity="center"
+                    android:text="CONTENT"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_12sdp" />
+
+                <TextView
+                    android:id="@+id/tvSiteContentData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="left"
+                    android:text="MauiNow.com produces articles and videos about local news and events on Maui. It features lifestyle, sports,entertainment and business content, and provides a Maui Surf Report. On a typical day, the homepage features articles about crime, a performance at the Maui Arts &amp; Cultural Center, and forest restoration., Amid the pandemic outbreak in 2020, the website added a Maui Coronavirus Updates section with stories about coronavirus cases, clusters, and vaccines. One story was titled “Recent COVID-19 Cases Include Church Cluster on Maui."
+                    android:textColor="@color/text_date_time"
+                    android:textSize="@dimen/_8sdp" />
+
+                <TextView
+                    android:id="@+id/tvSiteHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:gravity="center"
+                    android:text="HISTORY"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_12sdp" />
+
+                <TextView
+                    android:id="@+id/tvSiteHistoryData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="left"
+                    android:text="The company was founded in 1984 under the name Lahaina Broadcasting Company. It became Pacific Media Group in 2013. MauiNow.com launched in 2010. Editor’s Note: This Nutrition Label was updated on April 30, 2021, to reflect that MauiNow.com now identifies its ownership, but does not name content creators or clearly label sponsored content. The criteria checklist has been adjusted accordingly. This label previously was updated on April 13, 2020."
+                    android:textColor="@color/text_date_time"
+                    android:textSize="@dimen/_8sdp" />
+
+                <TextView
+                    android:id="@+id/tvSiteCredibility"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="@font/roboto_medium"
+                    android:gravity="center"
+                    android:text="CREDIBILITY"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_12sdp" />
+
+                <TextView
+                    android:id="@+id/tvSiteCredibilityData"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/_10sdp"
+                    android:fontFamily="sans-serif"
+                    android:gravity="left"
+                    android:text="The company was founded in 1984 under the name Lahaina Broadcasting Company. It became Pacific Media Group in 2013. MauiNow.com launched in 2010. Editor’s Note: This Nutrition Label was updated on April 30, 2021, to reflect that MauiNow.com now identifies its ownership, but does not name content creators or clearly label sponsored content. The criteria checklist has been adjusted accordingly. This label previously was updated on April 13, 2020."
+                    android:textColor="@color/text_date_time"
+                    android:textSize="@dimen/_8sdp" />
+
+            </LinearLayout>
+
+        </ScrollView>
+    </androidx.cardview.widget.CardView>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/_80sdp"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/_10sdp"
+        android:src="@drawable/ic_dot_2" />
+
+</LinearLayout>
