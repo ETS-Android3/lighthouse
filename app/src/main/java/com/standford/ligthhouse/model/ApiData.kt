@@ -13,7 +13,6 @@ class dataObject {
     var data: List<Data>? = null
 }
 
-
 class Data {
     @SerializedName("createdDate")
     var createdDate: String? = null
