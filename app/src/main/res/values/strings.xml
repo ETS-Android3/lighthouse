@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">LigthHouse</string>
+    <string name="title_activity_dashboard">DashboardActivity</string>
+    <string name="title_home">Home</string>
+    <string name="title_user_profile">User Profile</string>
+    <string name="title_current">Current</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="service_label">NotificationListenerExampleService</string>
+    <string name="image_change_explanation">Concatenated Text Messages Here:</string>
+
+    <!-- Placeholder string for if the image doesn't load -->
+    <string name="notification_logo">Intercepted Notification Logo</string>
+
+    <!-- Strings related to the Alert Dialog -->
+    <string name="notification_listener_service">"Lighthouse"</string>
+    <string name="notification_listener_service_explanation">"For the the app. to work you need to enable the Notification Listener Service. Enable it now?"</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+</resources>

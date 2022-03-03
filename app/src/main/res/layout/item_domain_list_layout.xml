@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/_5sdp"
+    android:background="@drawable/bg_button_green"
+    android:padding="@dimen/_5sdp">
+
+    <TextView
+        android:id="@+id/tvSender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="left|center"
+        android:orientation="vertical"
+        android:padding="@dimen/_10sdp"
+        android:text="Raagavi Ragothaman: “hey check this out https://www.fakenews.com”"
+        android:textColor="@color/black"
+        android:textSize="@dimen/_10sdp" />
+
+</LinearLayout>
