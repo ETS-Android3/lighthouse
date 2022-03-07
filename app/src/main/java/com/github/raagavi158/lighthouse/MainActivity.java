@@ -101,7 +101,7 @@ public class  MainActivity extends AppCompatActivity {
         // Finally we register a receiver to tell the MainActivity when a notification has been received
         notificationBroadcastReceiver = new NotificationBroadcastReceiver();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction("com.github.raagavi.lighthouse");
+        intentFilter.addAction("com.github.raagavi158.lighthouse");
         registerReceiver(notificationBroadcastReceiver,intentFilter);
         notificationId = 0;
     }
