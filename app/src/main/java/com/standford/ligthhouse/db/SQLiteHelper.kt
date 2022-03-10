@@ -63,7 +63,7 @@ class SQLiteHelper(context: Context?) {
         contentValues.put("active", active)
         contentValues.put("healthGuard", healthGuard)
         contentValues.put("locale", locale)
-        database!!.insert("api_data_ST", null, contentValues)
+        database!!.insert("api_data_LIGHT", null, contentValues)
     }
 
     fun stuffInsertMessage(
@@ -84,7 +84,7 @@ class SQLiteHelper(context: Context?) {
             "messagesContainingDomain",
             gson.toJson(linkModel.messagesContainingDomain)
         )
-        database!!.insert("api_data_ST_message", null, contentValues)
+        database!!.insert("api_data_LIGHT_message", null, contentValues)
     }
 
 
@@ -105,7 +105,7 @@ class SQLiteHelper(context: Context?) {
     fun stuffContentInsert(contentValues: ContentValues?) {
         val sb = StringBuilder()
         sb.append("")
-        sb.append(database!!.insert("api_data_ST", null, contentValues))
+        sb.append(database!!.insert("api_data_LIGHT", null, contentValues))
         Log.e("database.insert::", sb.toString())
     }
 
@@ -148,7 +148,7 @@ class SQLiteHelper(context: Context?) {
         contentValues.put("healthGuard", healthGuard)
         contentValues.put("locale", locale)
         database!!.update(
-            "api_data_ST",
+            "api_data_LIGHT",
             contentValues,
             "id = ?",
             arrayOf(id.toString())
@@ -218,7 +218,7 @@ class SQLiteHelper(context: Context?) {
     }
 
     fun truncateAll() {
-        database!!.execSQL("DELETE FROM api_data_ST")
+        database!!.execSQL("DELETE FROM api_data_LIGHT")
     }
 
     @SuppressLint("Range")
@@ -228,7 +228,7 @@ class SQLiteHelper(context: Context?) {
         val stuffGetSet = Data()
         return try {
             val rawQuery = database!!.rawQuery(
-                "SELECT * FROM api_data_ST where identifier = ?",
+                "SELECT * FROM api_data_LIGHT where identifier = ?",
                 arrayOf(identifier)
             )
             val sb = StringBuilder()
@@ -347,7 +347,7 @@ class SQLiteHelper(context: Context?) {
         val str = ""
         val arrayList = ArrayList<Data>()
         try {
-            val str2 = "SELECT * FROM api_data_ST"
+            val str2 = "SELECT * FROM api_data_LIGHT"
             var rawQuery = database!!.rawQuery(str2, null)
             val sb = StringBuilder()
             sb.append(str)
@@ -402,7 +402,7 @@ class SQLiteHelper(context: Context?) {
 
     val recordCount: Int
         get() {
-            val rawQuery = database!!.rawQuery("SELECT DISTINCT data_id FROM api_data_ST", null)
+            val rawQuery = database!!.rawQuery("SELECT DISTINCT data_id FROM api_data_LIGHT", null)
             rawQuery.moveToFirst()
             return rawQuery.count
         }

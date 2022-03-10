@@ -9,7 +9,7 @@ class SQLiteHandler(context: Context?) :
 
     override fun onCreate(sQLiteDatabase: SQLiteDatabase) {
         sQLiteDatabase.execSQL(
-            "create table api_data_ST (" +
+            "create table api_data_LIGHT (" +
                     "data_id integer primary key autoincrement," +
                     "createdDate text," +
                     "id text," +

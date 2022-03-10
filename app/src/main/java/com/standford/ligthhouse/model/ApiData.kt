@@ -17,7 +17,7 @@ class Data {
     @SerializedName("createdDate")
     var createdDate: String? = null
 
-    @SerializedName("id")
+    @SerializedName("jsonid")
     var id: String? = null
 
     @SerializedName("profileId")
