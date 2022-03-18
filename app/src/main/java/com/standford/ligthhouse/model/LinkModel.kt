@@ -9,7 +9,7 @@ data class LinkModel(
     var identifier: String,
     var topline: String,
     var rank: String,
-    var score: Int,
-    var writeup: List<BodyList>?,
+    var score: String,
+    var writeup: Any?,
     val messagesContainingDomain: ArrayList<MessageModel> = ArrayList()
 )

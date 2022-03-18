@@ -1,10 +1,8 @@
 package com.standford.ligthhouse.ui
 
-import android.app.AlertDialog
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
+import android.app.*
 import android.content.*
+import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
@@ -16,27 +14,20 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.gson.Gson
 import com.standford.ligthhouse.R
-import com.standford.ligthhouse.api.APIClient
 import com.standford.ligthhouse.api.APIInterface
 import com.standford.ligthhouse.db.SQLiteHelper
-import com.standford.ligthhouse.model.ApiData
-import com.standford.ligthhouse.model.Data
-import com.standford.ligthhouse.model.LinkModel
-import com.standford.ligthhouse.model.MessageModel
+import com.standford.ligthhouse.model.*
 import com.standford.ligthhouse.service.Lighthouse
 import com.standford.ligthhouse.ui.home.HomeFragment
 import com.standford.ligthhouse.utility.Share
 import com.standford.ligthhouse.utility.SharedPrefs
 import com.standford.ligthhouse.utility.Util
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
 import java.util.*
 
 
@@ -45,9 +36,7 @@ class DashboardActivity : AppCompatActivity() {
     private var notificationId = 0
     private var notificationBroadcastReceiver: NotificationBroadcastReceiver? = null
     private var enableNotificationListenerAlertDialog: AlertDialog? = null
-    private val disinformationLinksToIntercept: MutableList<Data?> = ArrayList()
     private val CHANNEL_ID = "WHATSAPP_DISINFO"
-    var dbHelper: SQLiteHelper? = null
 
     var apiInterface: APIInterface? = null
 
@@ -56,19 +45,9 @@ class DashboardActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         dbHelper = SQLiteHelper(this@DashboardActivity)
         dbHelper!!.open()
-
+        activity = this@DashboardActivity
         createNotificationChannel()
         setContentView(R.layout.activity_dashboard)
-
-        Log.e(TAG, "onCreate: DATA==>" + dbHelper!!.getAllData(this@DashboardActivity).size)
-
-        if (dbHelper!!.getAllData(this@DashboardActivity).size > 0) {
-            disinformationLinksToIntercept.addAll(dbHelper!!.getAllData(this@DashboardActivity))
-        } else {
-            getAndSetData()
-        }
-
-
 
         navView = this.findViewById(R.id.nav_view)
         navView!!.itemIconTintList = null
@@ -98,73 +77,39 @@ class DashboardActivity : AppCompatActivity() {
 
     }
 
-    private fun getAndSetData() {
-
-        Log.e("MainActivity", "getAndSetData()")
-
-        Util.showProgress(this@DashboardActivity, "Loading...")
-
-        apiInterface = APIClient.client?.create(APIInterface::class.java)
-
-        val call: Call<ApiData>? = apiInterface?.doGetAllData()
-        call!!.enqueue(object : Callback<ApiData> {
-            override fun onResponse(call: Call<ApiData>, response: Response<ApiData>) {
-                if (response.body() != null) {
-                    val templateData = response.body()
-                    loadDataBaseLinkNew(templateData!!.data!!.data)
-                    Util.dismissProgress()
-                } else {
-                    Toast.makeText(
-                        this@DashboardActivity,
-                        "Something went wrong",
-                        Toast.LENGTH_LONG
-                    ).show()
-
-                }
-            }
-
-            override fun onFailure(call: Call<ApiData>, t: Throwable) {
-                Util.dismissProgress()
-                Log.e("MainActivity", "onFailure:" + t.message)
-                Toast.makeText(
-                    this@DashboardActivity,
-                    "onFailure:==>" + t.message,
-                    Toast.LENGTH_LONG
-                ).show()
-                call.cancel()
-            }
-        })
+    override fun onResume() {
+        super.onResume()
+        if (disinformationLinksToIntercept.size <= 0) {
+            getData().execute()
+        }
     }
 
-    fun loadDataBaseLinkNew(templateData: List<Data>?) {
-        try {
-            val gson = Gson()
-            for (model in templateData!!) {
-                Log.i(TAG, "json read->${model.id}")
+    class getData : AsyncTask<Void?, Void?, Void?>() {
+        override fun onPreExecute() {
+            super.onPreExecute()
+            Util.showProgress(activity, "Loading...")
+        }
 
-                dbHelper!!.stuffInsert(
-                    model.createdDate,
-                    model.id,
-                    model.profileId,
-                    model.identifier,
-                    model.topline,
-                    model.rank,
-                    model.score,
-                    model.country,
-                    model.language,
-                    gson.toJson(model.writeup).toString(),
-                    model.criteria.toString(),
-                    model.active,
-                    model.healthGuard,
-                    model.locale
-                )
-
-                disinformationLinksToIntercept.add(model)
+        override fun onPostExecute(aVoid: Void?) {
+            super.onPostExecute(aVoid)
+            Util.dismissProgress()
+            Log.e("DATASIZE", "onPostExecute: " + disinformationLinksToIntercept.size)
+            if (disinformationLinksToIntercept.size <= 0) {
+                startActivity(activity!!, Intent(activity, UpdateDatabase::class.java), null)
             }
+        }
 
-        } catch (ex: Exception) {
-            Log.i(TAG, "json Exception->${ex.message}")
-            ex.printStackTrace()
+        override fun doInBackground(vararg p0: Void?): Void? {
+            disinformationLinksToIntercept.clear()
+            disinformationLinksToIntercept.addAll(dbHelper!!.getAllData(activity))
+            return null
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == RESULT_OK) {
+            getData().execute()
         }
     }
 
@@ -249,25 +194,25 @@ class DashboardActivity : AppCompatActivity() {
                 link.identifier!!,
                 link.topline!!,
                 link.rank!!,
-                link.score,
+                link.score!!,
                 writeup,
                 messagesContainingDomain
             )
 
 
-            dbHelper!!.stuffInsertMessage(
-                LinkModel(
-                    link.name!!,
-                    link.identifier!!,
-                    originalMessage,
-                    link.identifier!!,
-                    link.topline!!,
-                    link.rank!!,
-                    link.score,
-                    writeup,
-                    messagesContainingDomain
-                )
-            )
+//            dbHelper!!.stuffInsertMessage(
+//                LinkModel(
+//                    link.name!!,
+//                    link.identifier!!,
+//                    originalMessage,
+//                    link.identifier!!,
+//                    link.topline!!,
+//                    link.rank!!,
+//                    link.score!!,
+//                    writeup,
+//                    messagesContainingDomain
+//                )
+//            )
             Share.interceptedLinks.add(linkInfoListFormat)
 
             for (i in 0 until Share.interceptedLinks.size) {
@@ -290,7 +235,7 @@ class DashboardActivity : AppCompatActivity() {
             if (HomeFragment.adapter != null) {
                 HomeFragment.adapter!!.notifyDataSetChanged()
             }
-
+            navController!!.navigate(R.id.navigation_home)
 
             notificationMessage += linkInfo
             linkSender = link.name!!
@@ -399,6 +344,10 @@ class DashboardActivity : AppCompatActivity() {
          * Detect links in a message, add to detected links data structure with name of sender.
          */
 
+        private val disinformationLinksToIntercept: MutableList<Data?> = ArrayList()
+        var dbHelper: SQLiteHelper? = null
+        var activity: Activity? = null
+
         var navView: BottomNavigationView? = null
         var navController: NavController? = null
 
@@ -414,5 +363,13 @@ class DashboardActivity : AppCompatActivity() {
             }
             return links
         }
+
+
     }
+
+    fun updateDatabase(view: android.view.View) {
+        startActivity(Intent(this@DashboardActivity, UpdateDatabase::class.java))
+    }
+
+
 }

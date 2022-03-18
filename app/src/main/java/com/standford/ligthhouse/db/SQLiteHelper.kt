@@ -38,7 +38,7 @@ class SQLiteHelper(context: Context?) {
         identifier: String?,
         topline: String?,
         rank: String?,
-        score: Int?,
+        score: String?,
         country: String?,
         language: String?,
         writeup: String?,
@@ -63,7 +63,7 @@ class SQLiteHelper(context: Context?) {
         contentValues.put("active", active)
         contentValues.put("healthGuard", healthGuard)
         contentValues.put("locale", locale)
-        database!!.insert("api_data_LIGHT", null, contentValues)
+        database!!.insert("api_data_STLIGHT", null, contentValues)
     }
 
     fun stuffInsertMessage(
@@ -84,7 +84,7 @@ class SQLiteHelper(context: Context?) {
             "messagesContainingDomain",
             gson.toJson(linkModel.messagesContainingDomain)
         )
-        database!!.insert("api_data_LIGHT_message", null, contentValues)
+        database!!.insert("api_data_STLIGHT_message", null, contentValues)
     }
 
 
@@ -105,7 +105,7 @@ class SQLiteHelper(context: Context?) {
     fun stuffContentInsert(contentValues: ContentValues?) {
         val sb = StringBuilder()
         sb.append("")
-        sb.append(database!!.insert("api_data_LIGHT", null, contentValues))
+        sb.append(database!!.insert("api_data_STLIGHT", null, contentValues))
         Log.e("database.insert::", sb.toString())
     }
 
@@ -148,7 +148,7 @@ class SQLiteHelper(context: Context?) {
         contentValues.put("healthGuard", healthGuard)
         contentValues.put("locale", locale)
         database!!.update(
-            "api_data_LIGHT",
+            "api_data_STLIGHT",
             contentValues,
             "id = ?",
             arrayOf(id.toString())
@@ -218,7 +218,7 @@ class SQLiteHelper(context: Context?) {
     }
 
     fun truncateAll() {
-        database!!.execSQL("DELETE FROM api_data_LIGHT")
+        database!!.execSQL("DELETE FROM api_data_STLIGHT")
     }
 
     @SuppressLint("Range")
@@ -228,7 +228,7 @@ class SQLiteHelper(context: Context?) {
         val stuffGetSet = Data()
         return try {
             val rawQuery = database!!.rawQuery(
-                "SELECT * FROM api_data_LIGHT where identifier = ?",
+                "SELECT * FROM api_data_STLIGHT where identifier = ?",
                 arrayOf(identifier)
             )
             val sb = StringBuilder()
@@ -255,7 +255,7 @@ class SQLiteHelper(context: Context?) {
                         rawQuery.getString(rawQuery.getColumnIndex("identifier"))
                     stuffGetSet.topline = rawQuery.getString(rawQuery.getColumnIndex("topline"))
                     stuffGetSet.rank = rawQuery.getString(rawQuery.getColumnIndex("rank"))
-                    stuffGetSet.score = rawQuery.getInt(rawQuery.getColumnIndex("score"))
+                    stuffGetSet.score = rawQuery.getString(rawQuery.getColumnIndex("score"))
                     stuffGetSet.country = rawQuery.getString(rawQuery.getColumnIndex("country"))
                     stuffGetSet.language = rawQuery.getString(rawQuery.getColumnIndex("language"))
 //                        val str = rawQuery.getString(rawQuery.getColumnIndex("writeup"))
@@ -347,7 +347,7 @@ class SQLiteHelper(context: Context?) {
         val str = ""
         val arrayList = ArrayList<Data>()
         try {
-            val str2 = "SELECT * FROM api_data_LIGHT"
+            val str2 = "SELECT * FROM api_data_STLIGHT"
             var rawQuery = database!!.rawQuery(str2, null)
             val sb = StringBuilder()
             sb.append(str)
@@ -370,7 +370,7 @@ class SQLiteHelper(context: Context?) {
                             rawQuery.getString(rawQuery.getColumnIndex("identifier"))
                         stuffGetSet.topline = rawQuery.getString(rawQuery.getColumnIndex("topline"))
                         stuffGetSet.rank = rawQuery.getString(rawQuery.getColumnIndex("rank"))
-                        stuffGetSet.score = rawQuery.getInt(rawQuery.getColumnIndex("score"))
+                        stuffGetSet.score = rawQuery.getString(rawQuery.getColumnIndex("score"))
                         stuffGetSet.country = rawQuery.getString(rawQuery.getColumnIndex("country"))
                         stuffGetSet.language =
                             rawQuery.getString(rawQuery.getColumnIndex("language"))
@@ -378,9 +378,26 @@ class SQLiteHelper(context: Context?) {
 //                    data.list.forEach { sb.append(it).append(",") }
 //                    data.list = str.split(",")
 
-//                        data.writeup = JSONObject(rawQuery.getString(rawQuery.getColumnIndex("writeup")))
-                        stuffGetSet.criteria =
-                            JSONObject(rawQuery.getString(rawQuery.getColumnIndex("criteria")))
+                        try {
+                            stuffGetSet.writeup =
+                                rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                        } catch (e: Exception) {
+                            Log.e(
+                                "EXCEPTION",
+                                "getAllData: " + rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                            )
+                            stuffGetSet.writeup =
+                                rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                        }
+
+                        try {
+                            stuffGetSet.criteria =
+                                JSONObject(rawQuery.getString(rawQuery.getColumnIndex("criteria")))
+                        } catch (e: Exception) {
+                            stuffGetSet.criteria =
+                                "test"
+                        }
+
                         stuffGetSet.active =
                             rawQuery.getString(rawQuery.getColumnIndex("active")).toBoolean()
                         stuffGetSet.healthGuard =
@@ -402,7 +419,8 @@ class SQLiteHelper(context: Context?) {
 
     val recordCount: Int
         get() {
-            val rawQuery = database!!.rawQuery("SELECT DISTINCT data_id FROM api_data_LIGHT", null)
+            val rawQuery =
+                database!!.rawQuery("SELECT DISTINCT data_id FROM api_data_STLIGHT", null)
             rawQuery.moveToFirst()
             return rawQuery.count
         }

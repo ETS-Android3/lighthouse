@@ -9,7 +9,7 @@ class SQLiteHandler(context: Context?) :
 
     override fun onCreate(sQLiteDatabase: SQLiteDatabase) {
         sQLiteDatabase.execSQL(
-            "create table api_data_LIGHT (" +
+            "create table api_data_STLIGHT (" +
                     "data_id integer primary key autoincrement," +
                     "createdDate text," +
                     "id text," +
@@ -45,7 +45,7 @@ class SQLiteHandler(context: Context?) :
     }
 
     companion object {
-        const val DATABASE_NAME = "lighhouse.db"
+        const val DATABASE_NAME = "lighhousenew.db"
         private const val DATABASE_VERSION = 1
     }
 }

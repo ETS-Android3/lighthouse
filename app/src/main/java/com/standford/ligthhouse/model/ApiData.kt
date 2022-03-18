@@ -1,7 +1,6 @@
 package com.standford.ligthhouse.model
 
 import com.google.gson.annotations.SerializedName
-import org.json.JSONObject
 
 class ApiData {
     @SerializedName("data")
@@ -11,6 +10,25 @@ class ApiData {
 class dataObject {
     @SerializedName("data")
     var data: List<Data>? = null
+
+    @SerializedName("total")
+    var total: String? = null
+
+    @SerializedName("currentPage")
+    var currentPage: String? = null
+
+    @SerializedName("nextPage")
+    var nextPage: String? = null
+
+    @SerializedName("perPage")
+    var perPage: String? = null
+
+    @SerializedName("previousPage")
+    var previousPage: String? = null
+
+    @SerializedName("lastPage")
+    var lastPage: String? = null
+
 }
 
 class Data {
@@ -34,7 +52,7 @@ class Data {
     var rank: String? = null
 
     @SerializedName("score")
-    var score = 0
+    var score: String? = null
 
     @SerializedName("country")
     var country: String? = null
@@ -43,7 +61,7 @@ class Data {
     var language: String? = null
 
     @SerializedName("criteria")
-    var criteria: JSONObject? = null
+    var criteria: Any? = null
 
     @SerializedName("active")
     var active = false
@@ -55,7 +73,7 @@ class Data {
     var locale: String? = null
 
     @SerializedName("writeup")
-    var writeup: List<BodyList>? = null
+    var writeup: Any? = null
 }
 
 class BodyList {

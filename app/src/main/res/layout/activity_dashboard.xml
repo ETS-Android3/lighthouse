@@ -12,14 +12,24 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/white"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:layout_width="@dimen/_250sdp"
             android:layout_height="@dimen/_80sdp"
             android:layout_gravity="center"
+            android:padding="@dimen/_12sdp"
             android:src="@drawable/ic_main_lh" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:onClick="updateDatabase"
+            android:text="Update \nDatabase"
+            android:textColor="@color/black"
+            android:textSize="@dimen/_12sdp" />
 
     </LinearLayout>
 
