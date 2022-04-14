@@ -8,6 +8,7 @@ import android.widget.ListView
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.standford.ligthhouse.R
+import com.standford.ligthhouse.ui.DashboardActivity.Companion.dbHelper
 import com.standford.ligthhouse.utility.Share
 
 class DesThreeFragment : Fragment() {
@@ -27,9 +28,12 @@ class DesThreeFragment : Fragment() {
     private fun initData(view: View) {
         val tvSiteName = view.findViewById<TextView>(R.id.tvSiteName)
         val rvDomainList = view.findViewById<ListView>(R.id.rvDomainList)
+
+        val data = dbHelper!!.getAllnamelinkData(activity, Share.selectModel.link)
+
         try {
             tvSiteName.text = Share.selectModel.link
-            adapter = SenderModelAdapter(activity, Share.selectModel.messagesContainingDomain)
+            adapter = SenderModelAdapter(activity, data)
             rvDomainList.adapter = adapter
         } catch (e: Exception) {
             e.printStackTrace()

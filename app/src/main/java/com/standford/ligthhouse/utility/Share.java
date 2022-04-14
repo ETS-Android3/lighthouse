@@ -11,4 +11,6 @@ public class Share {
     public static ArrayList<LinkModel> interceptedLinks = new ArrayList<>();
     @NotNull
     public static LinkModel selectModel;
+    @NotNull
+    public static String name;
 }

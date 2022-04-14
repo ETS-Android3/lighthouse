@@ -38,6 +38,15 @@ class SQLiteHandler(context: Context?) :
                     ")"
         )
 
+        sQLiteDatabase.execSQL(
+            "create table name_link (" +
+                    "msg_id integer primary key autoincrement," +
+                    "sender text," +
+                    "identifier text," +
+                    "originalMessage text" +
+                    ")"
+        )
+
     }
 
     override fun onUpgrade(sQLiteDatabase: SQLiteDatabase, i: Int, i2: Int) {

@@ -11,6 +11,7 @@ import com.google.gson.Gson
 import com.standford.ligthhouse.model.BodyList
 import com.standford.ligthhouse.model.Data
 import com.standford.ligthhouse.model.LinkModel
+import com.standford.ligthhouse.model.MessageModel
 import org.json.JSONObject
 import java.util.*
 
@@ -64,6 +65,18 @@ class SQLiteHelper(context: Context?) {
         contentValues.put("healthGuard", healthGuard)
         contentValues.put("locale", locale)
         database!!.insert("api_data_STLIGHT", null, contentValues)
+    }
+
+    fun namelinkInsert(
+        sender: String?,
+        link: String?,
+        original_message: String?
+    ) {
+        val contentValues = ContentValues()
+        contentValues.put("sender", sender)
+        contentValues.put("identifier", link)
+        contentValues.put("originalMessage", original_message)
+        database!!.insert("name_link", null, contentValues)
     }
 
     fun stuffInsertMessage(
@@ -247,31 +260,49 @@ class SQLiteHelper(context: Context?) {
 
 //                    val data=Data()
 //                    stuffGetSet = wit(
+//                    stuffGetSet = wit(
                     stuffGetSet.createdDate =
                         rawQuery.getString(rawQuery.getColumnIndex("createdDate"))
                     stuffGetSet.id = rawQuery.getString(rawQuery.getColumnIndex("data_id"))
-                    stuffGetSet.profileId = rawQuery.getString(rawQuery.getColumnIndex("profileId"))
+                    stuffGetSet.profileId =
+                        rawQuery.getString(rawQuery.getColumnIndex("profileId"))
                     stuffGetSet.identifier =
                         rawQuery.getString(rawQuery.getColumnIndex("identifier"))
                     stuffGetSet.topline = rawQuery.getString(rawQuery.getColumnIndex("topline"))
                     stuffGetSet.rank = rawQuery.getString(rawQuery.getColumnIndex("rank"))
                     stuffGetSet.score = rawQuery.getString(rawQuery.getColumnIndex("score"))
                     stuffGetSet.country = rawQuery.getString(rawQuery.getColumnIndex("country"))
-                    stuffGetSet.language = rawQuery.getString(rawQuery.getColumnIndex("language"))
+                    stuffGetSet.language =
+                        rawQuery.getString(rawQuery.getColumnIndex("language"))
 //                        val str = rawQuery.getString(rawQuery.getColumnIndex("writeup"))
 //                    data.list.forEach { sb.append(it).append(",") }
 //                    data.list = str.split(",")
 
-//                        data.writeup = JSONObject(rawQuery.getString(rawQuery.getColumnIndex("writeup")))
-                    stuffGetSet.criteria =
-                        JSONObject(rawQuery.getString(rawQuery.getColumnIndex("criteria")))
+                    try {
+                        stuffGetSet.writeup =
+                            rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                    } catch (e: Exception) {
+                        Log.e(
+                            "EXCEPTION",
+                            "getAllData: " + rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                        )
+                        stuffGetSet.writeup =
+                            rawQuery.getString(rawQuery.getColumnIndex("writeup"))
+                    }
+
+                    try {
+                        stuffGetSet.criteria =
+                            JSONObject(rawQuery.getString(rawQuery.getColumnIndex("criteria")))
+                    } catch (e: Exception) {
+                        stuffGetSet.criteria =
+                            "test"
+                    }
+
                     stuffGetSet.active =
                         rawQuery.getString(rawQuery.getColumnIndex("active")).toBoolean()
                     stuffGetSet.healthGuard =
                         rawQuery.getString(rawQuery.getColumnIndex("healthGuard")).toBoolean()
                     stuffGetSet.locale = rawQuery.getString(rawQuery.getColumnIndex("locale"))
-
-                    stuffGetSet.writeup = getDataBody(context, stuffGetSet.profileId!!)
 
 //                    )
                     try {
@@ -292,6 +323,96 @@ class SQLiteHelper(context: Context?) {
             stuffGetSet
         }
     }
+
+    @SuppressLint("Range")
+    fun getAllnamelinkData(context: Context?, identifier: String): ArrayList<MessageModel> {
+        val str = ""
+        val arrayList = ArrayList<MessageModel>()
+        try {
+            val str2 = "SELECT * FROM name_link where identifier = ?"
+            var rawQuery = database!!.rawQuery(str2, arrayOf(identifier))
+            val sb = StringBuilder()
+            sb.append(str)
+            sb.append(rawQuery.count)
+            val count = rawQuery.count
+            for (i in 0..count) {
+                val sQLiteDatabase = database
+                rawQuery = database!!.rawQuery(str2 + " LIMIT 1 OFFSET " + i, null)
+
+                if (rawQuery.moveToFirst()) {
+                    do {
+
+                        val stuffGetSet = MessageModel()
+
+                        stuffGetSet.link = rawQuery.getString(rawQuery.getColumnIndex("identifier"))
+                        stuffGetSet.originalMessage =
+                            rawQuery.getString(rawQuery.getColumnIndex("originalMessage"))
+                        stuffGetSet.sender = rawQuery.getString(rawQuery.getColumnIndex("sender"))
+
+                        arrayList.add(stuffGetSet)
+                    } while (rawQuery.moveToNext())
+                }
+            }
+            rawQuery.close()
+            val sb5 = StringBuilder()
+            sb5.append(str)
+            sb5.append(arrayList.size)
+        } catch (unused: Exception) {
+            Log.e("EXCEPTION", "getAllnamelinkData: " + unused.message)
+        }
+
+        return arrayList
+    }
+
+
+    @SuppressLint("Range")
+    fun getnamelinkData(context: Context?, identifier: String): MessageModel? {
+        Log.e("getData", "str:" + identifier)
+        val str2 = ""
+        val stuffGetSet = MessageModel()
+        return try {
+            val rawQuery = database!!.rawQuery(
+                "SELECT * FROM name_link where identifier = ?",
+                arrayOf(identifier)
+            )
+            val sb = StringBuilder()
+            sb.append(str2)
+            sb.append(rawQuery.count)
+            Log.e("cursor::01", sb.toString())
+            val sb2 = StringBuilder()
+            sb2.append(str2)
+            sb2.append(rawQuery.count)
+            Log.e("cursor::02", sb2.toString())
+            if (rawQuery.moveToFirst()) {
+                while (true) {
+                    val sb3 = StringBuilder()
+                    sb3.append(str2)
+                    sb3.append(rawQuery.count)
+
+                    stuffGetSet.link = rawQuery.getString(rawQuery.getColumnIndex("identifier"))
+                    stuffGetSet.originalMessage =
+                        rawQuery.getString(rawQuery.getColumnIndex("originalMessage"))
+                    stuffGetSet.sender = rawQuery.getString(rawQuery.getColumnIndex("createdDate"))
+
+                    try {
+                        if (!rawQuery.moveToNext()) {
+                            break
+                        }
+                    } catch (unused: SQLiteException) {
+                        Log.e("getData", "SQLiteException01:" + unused)
+                        return stuffGetSet
+                    }
+                }
+                //StuffGetSet2 = stuffGetSet;
+            }
+            rawQuery.close()
+            stuffGetSet
+        } catch (unused2: SQLiteException) {
+            Log.e("getData", "SQLiteException02:" + unused2)
+            stuffGetSet
+        }
+    }
+
 
     @SuppressLint("Range")
     fun getDataBody(context: Context?, profileId: String): List<BodyList>? {
@@ -339,6 +460,40 @@ class SQLiteHelper(context: Context?) {
             Log.e("getData", "SQLiteException02:" + unused2)
             writeup
         }
+    }
+
+    @SuppressLint("Range")
+    fun getAllSiteData(context: Context?): ArrayList<String> {
+        val str = ""
+        val arrayList = ArrayList<String>()
+        try {
+            val str2 = "SELECT identifier FROM api_data_STLIGHT"
+            var rawQuery = database!!.rawQuery(str2, null)
+            val sb = StringBuilder()
+            sb.append(str)
+            sb.append(rawQuery.count)
+            val count = rawQuery.count
+            for (i in 0..count) {
+                val sQLiteDatabase = database
+                rawQuery = database!!.rawQuery(str2 + " LIMIT 1 OFFSET " + i, null)
+
+                if (rawQuery.moveToFirst()) {
+                    do {
+                        val stuffGetSet =
+                            rawQuery.getString(rawQuery.getColumnIndex("identifier"))
+
+                        arrayList.add(stuffGetSet)
+                    } while (rawQuery.moveToNext())
+                }
+            }
+            rawQuery.close()
+            val sb5 = StringBuilder()
+            sb5.append(str)
+            sb5.append(arrayList.size)
+        } catch (unused: SQLiteException) {
+        }
+
+        return arrayList
     }
 
 

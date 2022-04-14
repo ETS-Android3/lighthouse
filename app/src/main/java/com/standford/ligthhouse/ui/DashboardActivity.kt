@@ -101,7 +101,7 @@ class DashboardActivity : AppCompatActivity() {
 
         override fun doInBackground(vararg p0: Void?): Void? {
             disinformationLinksToIntercept.clear()
-            disinformationLinksToIntercept.addAll(dbHelper!!.getAllData(activity))
+            disinformationLinksToIntercept.addAll(dbHelper!!.getAllSiteData(activity))
             return null
         }
     }
@@ -156,12 +156,12 @@ class DashboardActivity : AppCompatActivity() {
      * Basic verification implementation that iterates through the detected message links and
      * compares against populated disinformation link database.
      */
-    private fun dummyVerifyExtractedLinks(detectedLinks: ArrayList<List<String?>>): ArrayList<Data?> {
-        val disinformationLinks = ArrayList<Data?>()
+    private fun dummyVerifyExtractedLinks(detectedLinks: ArrayList<List<String?>>): ArrayList<String?> {
+        val disinformationLinks = ArrayList<String?>()
         for (link in detectedLinks) {
             for (storedData in disinformationLinksToIntercept) {
-                if (storedData!!.identifier.toString().equals(link[0].toString())) {
-                    storedData.name = link[1]
+                if (storedData!!.toString().equals(link[0].toString())) {
+                    Share.name = link[1].toString()
                     disinformationLinks.add(storedData)
                 }
             }
@@ -176,25 +176,29 @@ class DashboardActivity : AppCompatActivity() {
      * notification.
      */
     private fun notifyDisinformationLinks(
-        disinformationLinks: ArrayList<Data?>?,
+        disinformationLinks: ArrayList<String?>?,
         originalMessage: String?
     ) {
+
+
         if (disinformationLinks == null || disinformationLinks.size == 0) return
         var notificationMessage = ""
         var linkSender = ""
         for (link in disinformationLinks) {
+            val data = dbHelper!!.getData(activity, link!!)
 
-            val linkInfo = link!!.name + ": " + link.identifier
-            val writeup = link.writeup
+            Log.e("CHECKDATA", "notifyDisinformationLinks: " + data)
+            val linkInfo = Share.name + ": " + data!!.identifier
+            val writeup = data.writeup
             val messagesContainingDomain = ArrayList<MessageModel>()
             val linkInfoListFormat = LinkModel(
-                link.name!!,
-                link.identifier!!,
+                Share.name,
+                data.identifier!!,
                 originalMessage!!,
-                link.identifier!!,
-                link.topline!!,
-                link.rank!!,
-                link.score!!,
+                data.identifier!!,
+                data.topline!!,
+                data.rank!!,
+                data.score!!,
                 writeup,
                 messagesContainingDomain
             )
@@ -238,7 +242,7 @@ class DashboardActivity : AppCompatActivity() {
             navController!!.navigate(R.id.navigation_home)
 
             notificationMessage += linkInfo
-            linkSender = link.name!!
+            linkSender = Share.name
         }
         val intent = Intent(this, DashboardActivity::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
@@ -344,7 +348,7 @@ class DashboardActivity : AppCompatActivity() {
          * Detect links in a message, add to detected links data structure with name of sender.
          */
 
-        private val disinformationLinksToIntercept: MutableList<Data?> = ArrayList()
+        private val disinformationLinksToIntercept: MutableList<String?> = ArrayList()
         var dbHelper: SQLiteHelper? = null
         var activity: Activity? = null
 
@@ -359,6 +363,9 @@ class DashboardActivity : AppCompatActivity() {
                 val linkInfo: MutableList<String?> = ArrayList()
                 linkInfo.add(url)
                 linkInfo.add(messageSender)
+
+                dbHelper!!.namelinkInsert(messageSender, url, text)
+
                 links.add(linkInfo)
             }
             return links
