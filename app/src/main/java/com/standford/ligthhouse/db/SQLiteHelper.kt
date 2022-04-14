@@ -72,7 +72,13 @@ class SQLiteHelper(context: Context?) {
         link: String?,
         original_message: String?
     ) {
+
+        Log.e("CHECK HERE", "namelinkInsert: " + System.currentTimeMillis())
+        Log.e("CHECK HERE", "namelinkInsert: " + sender)
+        Log.e("CHECK HERE", "namelinkInsert: " + link)
+        Log.e("CHECK HERE", "namelinkInsert: " + original_message)
         val contentValues = ContentValues()
+        contentValues.put("msg_id", System.currentTimeMillis())
         contentValues.put("sender", sender)
         contentValues.put("identifier", link)
         contentValues.put("originalMessage", original_message)
@@ -415,14 +421,14 @@ class SQLiteHelper(context: Context?) {
 
 
     @SuppressLint("Range")
-    fun getDataBody(context: Context?, profileId: String): List<BodyList>? {
-        Log.e("getData", "str:" + profileId)
+    fun getDataBody(context: Context?, identifier: String): List<MessageModel>? {
+        Log.e("getData", "str:" + identifier)
         val str2 = ""
-        val writeup = ArrayList<BodyList>()
+        val writeup = ArrayList<MessageModel>()
         return try {
             val rawQuery = database!!.rawQuery(
-                "SELECT * FROM body_list where profileId = ?",
-                arrayOf(profileId)
+                "SELECT * FROM name_link where identifier = ?",
+                arrayOf(identifier)
             )
             val sb = StringBuilder()
             sb.append(str2)
@@ -437,10 +443,11 @@ class SQLiteHelper(context: Context?) {
                     val sb3 = StringBuilder()
                     sb3.append(str2)
                     sb3.append(rawQuery.count)
-                    val stuffGetSet = BodyList()
-                    stuffGetSet.title = rawQuery.getString(rawQuery.getColumnIndex("title"))
-                    stuffGetSet.body = listOf(rawQuery.getString(rawQuery.getColumnIndex("body")))
-                    stuffGetSet.order = rawQuery.getInt(rawQuery.getColumnIndex("profileId"))
+                    val stuffGetSet = MessageModel()
+                    stuffGetSet.link = rawQuery.getString(rawQuery.getColumnIndex("identifier"))
+                    stuffGetSet.originalMessage =
+                        rawQuery.getString(rawQuery.getColumnIndex("originalMessage"))
+                    stuffGetSet.sender = rawQuery.getString(rawQuery.getColumnIndex("sender"))
                     writeup.add(stuffGetSet)
 
                     try {
@@ -473,18 +480,22 @@ class SQLiteHelper(context: Context?) {
             sb.append(str)
             sb.append(rawQuery.count)
             val count = rawQuery.count
-            for (i in 0..count) {
-                val sQLiteDatabase = database
-                rawQuery = database!!.rawQuery(str2 + " LIMIT 1 OFFSET " + i, null)
+//            for (i in 0..count) {
+//                val sQLiteDatabase = database
+//                rawQuery = database!!.rawQuery(str2 + " LIMIT 1 OFFSET " + i, null)
+//
+//                if (rawQuery.moveToFirst()) {
+//                    do {
+//                        val stuffGetSet =
+//                            rawQuery.getString(rawQuery.getColumnIndex("identifier"))
+//
+//                        arrayList.add(stuffGetSet)
+//                    } while (rawQuery.moveToNext())
+//                }
+//            }
 
-                if (rawQuery.moveToFirst()) {
-                    do {
-                        val stuffGetSet =
-                            rawQuery.getString(rawQuery.getColumnIndex("identifier"))
-
-                        arrayList.add(stuffGetSet)
-                    } while (rawQuery.moveToNext())
-                }
+            while (rawQuery.moveToNext()) {
+                arrayList.add(rawQuery.getString(rawQuery.getColumnIndex("identifier")))
             }
             rawQuery.close()
             val sb5 = StringBuilder()
